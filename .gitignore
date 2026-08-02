@@ -8,7 +8,7 @@ channelUsageReport.json
 
 # deps
 node_modules/
-
+node_modules/package-lock.json # this might be overcompensation lol
 
 # runtime
 npm-debug.log*
