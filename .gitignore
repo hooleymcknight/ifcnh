@@ -1,0 +1,21 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+channelUsageReport.json
+*.log
+
+# deps
+node_modules/
+
+
+# runtime
+npm-debug.log*
+.npm/
+
+# editors / os
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,45 @@
+{
+    "textChannels": {
+        "0000000000000000000": {
+            "name": "general-chat",
+            "data": [
+                {
+                    "date": "8/2/2026",
+                    "messagesSent": 4,
+                    "membersActive": ["array/set of hashed user IDs", "or a number when day is over"]
+                }
+            ]
+        },
+        "TEXT_CHANNEL_ID": {
+            "name": "CHANNEL_NAME",
+            "data": [
+                {
+                    "date": "M/D/YYYY",
+                    "messagesSent": 11,
+                    "membersActive": 3
+                }
+            ]
+        }
+    },
+    "voiceChats": {
+        "voiceChatID00000000000": [
+            {
+                "sessionId": "numbers",
+                "startTime": "",
+                "endTime": null,
+                "users": [
+                    {
+                        "user": "hashedid",
+                        "startTime": "",
+                        "endTime": ""
+                    },
+                    {
+                        "user": "hashedid",
+                        "startTime": "",
+                        "endTime": ""
+                    }
+                ]
+            }
+        ]
+    }
+}
