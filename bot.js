@@ -35,8 +35,8 @@ const body = [
 client.on(Events.ClientReady, async (readyClient) => {
     console.log(`Logged in as ${readyClient.user.tag}!`);
 
-    const channel = await client.channels.fetch(WELCOME_CHANNEL_ID);
-    const message = await channel.send({ content: body, components: [] });
+    // const channel = await client.channels.fetch(WELCOME_CHANNEL_ID);
+    // const message = await channel.send({ content: body, components: [] });
 });
 
 client.on(Events.MessageCreate, async (message) => {
