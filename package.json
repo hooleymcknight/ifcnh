@@ -3,9 +3,11 @@
     "private": true,
     "scripts": {
         "start": "node --env-file=.env bot.js",
-        "sync": "node --env-file=.env scripts/syncReference.js",
+        "dev": "nodemon --ignore channelUsageReport.json --ignore content/ --exec \"node --env-file=.env bot.js\"",
         "register": "node --env-file=.env scripts/registerCommands.js",
-        "dev": "nodemon --ignore channelUsageReport.json --exec \"node --env-file=.env bot.js\""
+        "sync:rules": "node --env-file=.env scripts/syncMarkdown.js rules",
+        "sync:reference": "node --env-file=.env scripts/syncMarkdown.js reference",
+        "sync:welcome": "node --env-file=.env scripts/postWelcome.js"
     },
     "dependencies": {
         "discord.js": "^14.27.0",

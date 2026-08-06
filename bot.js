@@ -1,55 +1,32 @@
-import { 
-    Client,
-    Events,
-    GatewayIntentBits,
-    ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle,
-    MessageFlags,
-    SlashCommandBuilder,
-    Collection,
-    ModalBuilder
- } from 'discord.js';
-import usage from './channelUsageReport.json' with { type: 'json' };
-import { updateTextChannelReport } from './lib/textChannelReporting.js';
-import { updateVoiceChatReport } from './lib/voiceChatReporting.js';
-import { getCommands } from './commands/init.js';
-import { forwardReport } from './commands/report/forward.js';
+const { Client, Events, GatewayIntentBits, MessageFlags, Collection } = require('discord.js');
 
-const client = new Client({ intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildVoiceStates,
-    GatewayIntentBits.GuildMessages,
-]});
+const { updateTextChannelReport } = require('./lib/textChannelReporting.js');
+const { updateVoiceChatReport } = require('./lib/voiceChatReporting.js');
+const { getCommands } = require('./commands/init.js');
+const { forwardReport } = require('./commands/report/forward.js');
+const { buildReportModal, REPORT_MODAL_ID, REPORT_BUTTON_ID } = require('./lib/reportComponents.js');
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.GuildMessages,
+    ],
+});
 
 // ============== TESTING ONLY ==============
 const testingMode = false; // false before git commit
 // ============== TESTING ONLY ==============
 
-const MOD_REF_SHEET = './mod-reference-sheet.md';
-const INVITE = 'https://discord.gg/zHtbuhzp7Q';
-const WELCOME_CHANNEL_ID = '1531697295140192488';
-const TESTING_CHANNEL_ID = '1533547535090712596';
-
-const data = new SlashCommandBuilder()
-	.setName('echo')
-	.setDescription('Replies with your input!')
-	.addStringOption((option) => option.setName('input').setDescription('The input to echo back'));
-
-/* the shit that comes out of the box for now */
-
 client.commands = getCommands(Collection);
 
 client.on(Events.ClientReady, async (readyClient) => {
     console.log(`Logged in as ${readyClient.user.tag}!`);
-
-    // const channel = await client.channels.fetch(WELCOME_CHANNEL_ID);
-    // const message = await channel.send({ content: body, components: [] });
-    
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
-	if (interaction.isChatInputCommand()) {
+    /* slash commands */
+    if (interaction.isChatInputCommand()) {
         const command = interaction.client.commands.get(interaction.commandName);
         if (!command) {
             console.error(`No command matching ${interaction.commandName} was found.`);
@@ -59,25 +36,54 @@ client.on(Events.InteractionCreate, async (interaction) => {
             await command.execute(interaction);
         } catch (error) {
             console.error(error);
+            const payload = {
+                content: 'There was an error while executing this command!',
+                flags: MessageFlags.Ephemeral,
+            };
             if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({
-                    content: 'There was an error while executing this command!',
-                    flags: MessageFlags.Ephemeral,
-                });
+                await interaction.followUp(payload);
             } else {
-                await interaction.reply({
-                    content: 'There was an error while executing this command!',
-                    flags: MessageFlags.Ephemeral,
-                });
+                await interaction.reply(payload);
             }
         }
     }
-	else if (interaction.isModalSubmit()) {
-        if (interaction.customId === 'ifcnhReportModal') {
-            await interaction.reply({ content: 'Thank you for taking the time to submit a report. It has been received.'});
+
+    /* the Report button on the rules and welcome messages */
+    else if (interaction.isButton()) {
+        if (interaction.customId === REPORT_BUTTON_ID) {
+            await interaction.showModal(buildReportModal());
+        }
+    }
+
+    /* report submissions */
+    else if (interaction.isModalSubmit()) {
+        if (interaction.customId === REPORT_MODAL_ID) {
+            // ephemeral: nobody else should see that this person filed a report
+            await interaction.reply({
+                content: 'Thank you for taking the time to submit a report. It has been received.',
+                flags: MessageFlags.Ephemeral,
+            });
+
             // user ID only gets processed if user checked yes to that
             const userIdToPass = interaction.fields.getCheckbox('nonAnon') ? interaction.user.id : null;
-            forwardReport(client, interaction.fields, userIdToPass);
+
+            try {
+                const result = await forwardReport(client, interaction.fields, userIdToPass);
+                if (result.degraded) {
+                    await interaction.followUp({
+                        content:
+                            "Heads up — your screenshots didn't make it through, but the rest of the report did. Feel free to DM a mod with the images if they matter.",
+                        flags: MessageFlags.Ephemeral,
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to forward report:', error);
+                await interaction.followUp({
+                    content:
+                        "Something went wrong sending that to the mod team, and I'd rather tell you than lose it quietly. Please DM a mod directly.",
+                    flags: MessageFlags.Ephemeral,
+                });
+            }
         }
     }
 });
@@ -93,7 +99,5 @@ client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
     if (testingMode) return;
     await updateVoiceChatReport(oldState, newState);
 });
-
-/* end of box */
 
 client.login(process.env.TOKEN);

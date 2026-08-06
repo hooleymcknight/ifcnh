@@ -1,6 +1,3 @@
-const REPORTS_CHANNEL_ID = '1534747738191827144';
-const TESTING_CHANNEL_ID = '1533547535090712596';
-
 const buildReportMessage = (content) => {
     let body = `# REPORT RECEIVED\n\n`;
     body += `**User being reported:** ${content.who}\n\n`;
@@ -28,7 +25,7 @@ const forwardReport = async (client, fields, userId) => {
         from: userId,
     };
 
-    const channel = await client.channels.fetch(REPORTS_CHANNEL_ID);
+    const channel = await client.channels.fetch(process.env.REPORTS_CHANNEL_ID);
     const payload = buildReportMessage(reportContent);
 
     try {

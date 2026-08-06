@@ -54,7 +54,7 @@ client.once('clientReady', async () => {
 
     const index = [
         '# Mod reference sheet',
-        '-# Jump links. Sections update in place, so these stay valid.',
+        '-# Jump links. You click. Discord jumps.',
         '',
         ...sections.map(
             (s) =>

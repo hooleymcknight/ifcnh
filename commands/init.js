@@ -10,7 +10,8 @@ const getCommands = (Collection) => {
     for (const folder of commandFolders) {
         if (!folder.isDirectory()) continue;
         const commandsPath = path.join(foldersPath, folder.name);
-        const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith('.js'));
+        // only index.js is a command entry point; helpers alongside it are ignored
+        const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith('index.js'));
         for (const file of commandFiles) {
             const filePath = path.join(commandsPath, file);
             const command = require(filePath);

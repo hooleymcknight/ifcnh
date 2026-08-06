@@ -1,5 +1,16 @@
-export const getWelcomeMessage = () => {
-    const body = [
+const INVITE = 'https://discord.gg/zHtbuhzp7Q';
+
+/**
+ * The pinned welcome message.
+ *
+ * The invite sits in a code block rather than a link button or bare URL: code
+ * blocks get a copy affordance on desktop, don't unfurl into an invite card,
+ * and keep working whether or not the bot is running.
+ *
+ * @returns {string} Message content, ready to send.
+ */
+const getWelcomeMessage = () =>
+    [
         'Welcome in! 🌙',
         '',
         'Low expectations, by design.',
@@ -13,8 +24,7 @@ export const getWelcomeMessage = () => {
         'Aim well, roll high, meet quota, farm good.',
         '',
         '-# Permanent invite, in case you leave and want back in:',
-        '```' + INVITE + '```'
+        '```' + INVITE + '```',
     ].join('\n');
 
-    return body;
-}
+module.exports = { getWelcomeMessage, INVITE };
