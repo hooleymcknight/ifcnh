@@ -4,7 +4,7 @@ const { normalize, splitSections, pack } = require('../lib/markdownToDiscord.js'
 
 const SHEET = '../content/mod-reference-sheet.md';
 const IDS = '../content/reference-ids.json';
-const CHANNEL_ID = 'your-reference-channel-id';
+const MOD_REF_CHANNEL_ID = '1534692583148617818';
 const LIMIT = 1900;
 
 async function loadIds() {
@@ -40,7 +40,7 @@ async function upsert(channel, key, chunks, ids) {
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.once('clientReady', async () => {
-    const channel = await client.channels.fetch(CHANNEL_ID);
+    const channel = await client.channels.fetch(MOD_REF_CHANNEL_ID);
     const ids = await loadIds();
     const text = normalize(await fs.readFile(SHEET, 'utf8'));
     const sections = splitSections(text);
