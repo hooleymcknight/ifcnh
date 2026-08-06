@@ -1,5 +1,10 @@
 {
+    "name": "ifcnh bot",
+    "private": true,
     "scripts": {
+        "start": "node --env-file=.env bot.js",
+        "sync": "node --env-file=.env scripts/syncReference.js",
+        "register": "node --env-file=.env scripts/registerCommands.js",
         "dev": "nodemon --ignore channelUsageReport.json --exec \"node --env-file=.env bot.js\""
     },
     "dependencies": {

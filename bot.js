@@ -1,7 +1,20 @@
-import { Client, Events, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } from 'discord.js';
+import { 
+    Client,
+    Events,
+    GatewayIntentBits,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    MessageFlags,
+    SlashCommandBuilder,
+    Collection,
+    ModalBuilder
+ } from 'discord.js';
 import usage from './channelUsageReport.json' with { type: 'json' };
 import { updateTextChannelReport } from './lib/textChannelReporting.js';
 import { updateVoiceChatReport } from './lib/voiceChatReporting.js';
+import { getCommands } from './commands/init.js';
+import { forwardReport } from './commands/report/forward.js';
 
 const client = new Client({ intents: [
     GatewayIntentBits.Guilds,
@@ -9,41 +22,75 @@ const client = new Client({ intents: [
     GatewayIntentBits.GuildMessages,
 ]});
 
+// ============== TESTING ONLY ==============
+const testingMode = true; // false before git commit
+// ============== TESTING ONLY ==============
+
+const MOD_REF_SHEET = './mod-reference-sheet.md';
 const INVITE = 'https://discord.gg/zHtbuhzp7Q';
 const WELCOME_CHANNEL_ID = '1531697295140192488';
-// const TESTING_CHANNEL_ID = '1533547535090712596';
+const TESTING_CHANNEL_ID = '1533547535090712596';
 
-const body = [
-  'Welcome in! 🌙',
-  '',
-  'Low expectations, by design.',
-  '',
-  "There's no feed here. Nothing to keep up with, no guilt for going quiet. Just games.",
-  '',
-  'Come play when you want company. Bring whoever you like — everyone follows the same rules.',
-  '',
-  "Ghost when you need, or even leave entirely and come back, as many times as you want. Nobody's watching the door.",
-  '',
-  'Aim well, roll high, meet quota, farm good.',
-  '',
-  '-# Permanent invite, in case you leave and want back in:',
-  '```' + INVITE + '```'
-].join('\n');
+const data = new SlashCommandBuilder()
+	.setName('echo')
+	.setDescription('Replies with your input!')
+	.addStringOption((option) => option.setName('input').setDescription('The input to echo back'));
 
 /* the shit that comes out of the box for now */
+
+client.commands = getCommands(Collection);
 
 client.on(Events.ClientReady, async (readyClient) => {
     console.log(`Logged in as ${readyClient.user.tag}!`);
 
     // const channel = await client.channels.fetch(WELCOME_CHANNEL_ID);
     // const message = await channel.send({ content: body, components: [] });
+    
 });
 
+client.on(Events.InteractionCreate, async (interaction) => {
+	if (interaction.isChatInputCommand()) {
+        const command = interaction.client.commands.get(interaction.commandName);
+        if (!command) {
+            console.error(`No command matching ${interaction.commandName} was found.`);
+            return;
+        }
+        try {
+            await command.execute(interaction);
+        } catch (error) {
+            console.error(error);
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({
+                    content: 'There was an error while executing this command!',
+                    flags: MessageFlags.Ephemeral,
+                });
+            } else {
+                await interaction.reply({
+                    content: 'There was an error while executing this command!',
+                    flags: MessageFlags.Ephemeral,
+                });
+            }
+        }
+    }
+	else if (interaction.isModalSubmit()) {
+        if (interaction.customId === 'ifcnhReportModal') {
+            await interaction.reply({ content: 'Thank you for taking the time to submit a report. It has been received.'});
+            // user ID only gets processed if user checked yes to that
+            const userIdToPass = interaction.fields.getCheckbox('nonAnon') ? interaction.user.id : null;
+            forwardReport(client, interaction.fields, userIdToPass);
+        }
+    }
+});
+
+/* data reporting: */
+
 client.on(Events.MessageCreate, async (message) => {
+    if (testingMode) return;
     await updateTextChannelReport(message);
 });
 
 client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
+    if (testingMode) return;
     await updateVoiceChatReport(oldState, newState);
 });
 
