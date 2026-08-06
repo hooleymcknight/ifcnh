@@ -23,7 +23,7 @@ const client = new Client({ intents: [
 ]});
 
 // ============== TESTING ONLY ==============
-const testingMode = true; // false before git commit
+const testingMode = false; // false before git commit
 // ============== TESTING ONLY ==============
 
 const MOD_REF_SHEET = './mod-reference-sheet.md';
