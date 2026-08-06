@@ -1,9 +1,11 @@
 const fs = require('node:fs/promises');
 const { Client, GatewayIntentBits } = require('discord.js');
 const { normalize, splitSections, pack } = require('../lib/markdownToDiscord.js');
+const path = require('node:path');
 
-const SHEET = '../content/mod-reference-sheet.md';
-const IDS = '../content/reference-ids.json';
+const contentPath = path.join(__dirname, '../content');
+const SHEET = contentPath + '/mod-reference-sheet.md';
+const IDS = contentPath + '/reference-ids.json';
 const MOD_REF_CHANNEL_ID = '1534692583148617818';
 const LIMIT = 1900;
 
