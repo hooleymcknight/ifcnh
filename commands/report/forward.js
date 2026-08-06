@@ -10,7 +10,7 @@ const buildReportMessage = (content) => {
 
     return {
         content: body,
-        files: content.pics.map((x) => x.url),
+        files: content.pics?.map((x) => x.url) || [],
         allowedMentions: { users: content.from ? [content.from] : [] },
     };
 };
